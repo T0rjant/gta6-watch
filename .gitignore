@@ -1,0 +1,5 @@
+# Artefacts de compilation
+build/
+
+# macOS
+.DS_Store
