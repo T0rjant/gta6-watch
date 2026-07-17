@@ -6,7 +6,7 @@ cd "$(dirname "$0")"
 APP_NAME="GTA VI Watch"
 BINARY="GTA6Watch"
 BUNDLE_ID="com.torjant.gta6watch"
-VERSION="1.3"
+VERSION="1.4"
 APP_DIR="build/$APP_NAME.app"
 
 echo "── Nettoyage"
@@ -38,7 +38,7 @@ cat > "$APP_DIR/Contents/Info.plist" <<PLIST
     <key>CFBundlePackageType</key><string>APPL</string>
     <key>CFBundleIconFile</key><string>AppIcon</string>
     <key>LSMinimumSystemVersion</key><string>14.0</string>
-    <key>NSHumanReadableCopyright</key><string>© 2026 Torjant — Licence MIT</string>
+    <key>NSHumanReadableCopyright</key><string>© 2026 Torjant — GNU AGPL v3</string>
     <key>NSHighResolutionCapable</key><true/>
     <key>NSSupportsAutomaticTermination</key><false/>
     <key>NSAppTransportSecurity</key><dict>

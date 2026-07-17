@@ -1,10 +1,10 @@
 # GTA VI Watch 🌴 — GTA 6 & Take-Two (TTWO) tracker for macOS
 
-![Platform](https://img.shields.io/badge/platform-macOS%2014%2B-black) ![Chip](https://img.shields.io/badge/Apple%20Silicon-native-orange) ![Swift](https://img.shields.io/badge/Swift-6-F05138) ![Size](https://img.shields.io/badge/size-~1.3%20MB-ff2e83) ![License](https://img.shields.io/badge/license-MIT-7b2ff7)
+![Platform](https://img.shields.io/badge/platform-macOS%2014%2B-black) ![Chip](https://img.shields.io/badge/Apple%20Silicon-native-orange) ![Swift](https://img.shields.io/badge/Swift-6-F05138) ![Size](https://img.shields.io/badge/size-~1.3%20MB-ff2e83) ![License](https://img.shields.io/badge/license-AGPL--3.0-7b2ff7)
 
 **The all-in-one GTA 6 dashboard for your Mac.** A native macOS menu bar app that tracks everything around **Grand Theft Auto VI** and **Take-Two Interactive (NASDAQ: TTWO)**: live stock price, official Rockstar Games & Take-Two announcements, gaming & finance press coverage, native alerts, and a countdown to the GTA VI release date.
 
-Built with SwiftUI. **Zero dependencies, no API keys, ~1.3 MB, sandboxed.** French 🇫🇷 / English 🇺🇸 interface. Made by **Torjant**.
+Built with SwiftUI. **Zero dependencies, no API keys, ~1.3 MB, sandboxed.** French 🇫🇷 / English 🇺🇸 interface. Made by **[Torjant](https://github.com/T0rjant)**.
 
 > 🇫🇷 **Version française plus bas** — [cliquer ici](#-version-française)
 
@@ -25,18 +25,25 @@ Built with SwiftUI. **Zero dependencies, no API keys, ~1.3 MB, sandboxed.** Fren
 
 ## Install
 
-**Requirements**: Apple Silicon Mac (M1 or newer), macOS 14+.
+**Requirements**: Apple Silicon Mac (M1, M2, M3, M4 or newer), macOS 14 or later.
 
-1. Download the `.pkg` from the latest [Release](../../releases)
-2. Double-click it — the app installs into `/Applications`
-3. First launch: macOS will warn because the app is not notarized (no 99 €/year Apple Developer account). Go to **System Settings → Privacy & Security → "Open Anyway"**. Once.
+1. **Download** the `.pkg` file from the latest [Release](../../releases).
+2. **Open it.** Because the app isn't notarized by Apple (I don't have a paid Developer account), macOS Gatekeeper will block it the first time with a message like *"Apple could not verify this app is free of malware."* This is expected — here's how to get past it:
+   - **Right-click** the `.pkg` → **Open** → in the dialog, click **Open** again. *(Or: double-click, let it fail, then go to  **System Settings → Privacy & Security**, scroll down, and click **"Open Anyway"**.)*
+3. Follow the installer — the app is placed in your **Applications** folder.
+4. **Launch it** from Applications. macOS may show the same warning once more for the app itself → **right-click → Open** again. After that, it opens normally forever.
+5. The app lives in your **menu bar** (top of the screen, next to the clock). Click its icon anytime; **"Open dashboard"** shows the full window.
 
-Prefer zero warnings? **Build it yourself in 30 seconds** (see below) — same result, compiled on your machine.
+> 🔒 Why the warning? It's just Gatekeeper being cautious with apps not signed by a paid Apple account — **not** a sign the app is unsafe. The full source code is right here in this repo, so you can verify there's nothing hidden. Only install it because you trust the source.
+
+**Optional — launch at login:** open the app's **Settings (⚙️)** and toggle *Launch at login* so it watches for you automatically every time you start your Mac.
+
+Prefer zero warnings? **Build it yourself in 30 seconds** (see below) — compiled on your own machine, macOS trusts it with no prompt.
 
 ## Build from source
 
 ```bash
-git clone https://github.com/Torjant/gta6-watch.git && cd gta6-watch
+git clone https://github.com/T0rjant/gta6-watch.git && cd gta6-watch
 ./build.sh
 ```
 
@@ -91,11 +98,20 @@ Sources/
 
 ## Installation
 
-**Prérequis** : Mac Apple Silicon (M1+), macOS 14+.
+**Prérequis** : Mac Apple Silicon (M1, M2, M3, M4 ou plus récent), macOS 14 ou plus.
 
-Télécharge le `.pkg` de la dernière [Release](../../releases), double-clique. Au premier lancement, macOS bloque (app non notarisée — pas de compte développeur Apple à 99 €/an) : **Réglages Système → Confidentialité et sécurité → « Ouvrir quand même »**. Une seule fois.
+1. **Télécharge** le fichier `.pkg` depuis la dernière [Release](../../releases).
+2. **Ouvre-le.** Comme l'app n'est pas notariée par Apple (je n'ai pas de compte développeur payant), macOS va la bloquer la première fois avec un message du type *« Apple ne peut pas vérifier que cette app ne contient pas de logiciel malveillant »*. C'est normal — voici comment passer :
+   - **Clic droit** sur le `.pkg` → **Ouvrir** → dans la fenêtre, clique **Ouvrir** à nouveau. *(Ou : double-clic, laisse échouer, puis va dans **Réglages Système → Confidentialité et sécurité**, descends en bas, et clique **« Ouvrir quand même »**.)*
+3. Suis l'installateur — l'app est placée dans ton dossier **Applications**.
+4. **Lance-la** depuis Applications. macOS peut réafficher le même avertissement une fois pour l'app elle-même → **clic droit → Ouvrir** encore. Ensuite elle s'ouvre normalement pour toujours.
+5. L'app vit dans ta **barre de menus** (en haut de l'écran, à côté de l'heure). Clique son icône quand tu veux ; **« Ouvrir le dashboard »** affiche la fenêtre complète.
 
-Alternative sans avertissement : compiler soi-même (30 secondes, section *Build from source* ci-dessus).
+> 🔒 Pourquoi l'avertissement ? C'est juste Gatekeeper, prudent avec les apps non signées par un compte Apple payant — **pas** un signe que l'app est dangereuse. Tout le code source est ici dans ce dépôt : tu peux vérifier qu'il n'y a rien de caché. Ne l'installe que si tu fais confiance à la source.
+
+**Option — lancer au démarrage :** ouvre les **Réglages (⚙️)** de l'app et active *Lancer au démarrage du Mac* pour qu'elle veille automatiquement à chaque démarrage.
+
+Alternative sans aucun avertissement : compiler soi-même (30 secondes, section *Build from source* ci-dessus) — compilé sur ta machine, macOS lui fait confiance sans rien demander.
 
 ## Sécurité
 
@@ -105,4 +121,8 @@ App Sandbox (réseau sortant uniquement), Hardened Runtime, HTTPS strict, filtre
 
 ## License / Licence
 
-[MIT](LICENSE) — © 2026 **Torjant**
+Licensed under the **[GNU AGPL v3](LICENSE)** — © 2026 **Torjant**
+
+**🇬🇧 What this means:** you are free to use, study, share, and modify this app for free. But if you redistribute it or run a modified version as a network service, you **must** publish your full source code under the same AGPL license. In practice: **nobody can turn this into a closed, paid product.** For a commercial license (closed-source use), contact the author.
+
+**🇫🇷 Ce que ça implique :** tu es libre d'utiliser, étudier, partager et modifier cette app gratuitement. Mais si tu la redistribues ou l'exploites en service en ligne, tu **dois** publier tout ton code source sous cette même licence AGPL. Concrètement : **personne ne peut en faire un produit fermé et payant.** Pour un usage commercial fermé, contacter l'auteur.

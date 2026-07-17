@@ -1,3 +1,7 @@
+// GTA VI Watch — Copyright (C) 2026 Torjant
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// This program is free software under the GNU AGPL v3; see LICENSE.
+
 import Foundation
 
 /// Chaînes de l'interface en français et anglais.
@@ -54,6 +58,10 @@ struct L10n {
     var newsLbl: String { en ? "News:" : "Actualités :" }
     var batteryNote: String { en ? "Longer intervals use less battery." : "Des intervalles plus longs consomment moins de batterie." }
     var close: String { en ? "Close" : "Fermer" }
+    var licenseNotice: String {
+        en ? "Free software, no warranty — released under the"
+           : "Logiciel libre, sans garantie — publié sous"
+    }
 
     // Barre de menus
     var openDashboard: String { en ? "Open dashboard" : "Ouvrir le dashboard" }

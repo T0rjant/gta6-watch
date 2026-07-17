@@ -1,3 +1,7 @@
+// GTA VI Watch — Copyright (C) 2026 Torjant
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// This program is free software under the GNU AGPL v3; see LICENSE.
+
 import Foundation
 import UserNotifications
 

@@ -1,3 +1,7 @@
+// GTA VI Watch — Copyright (C) 2026 Torjant
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// This program is free software under the GNU AGPL v3; see LICENSE.
+
 import SwiftUI
 import AppKit
 
@@ -408,6 +412,20 @@ struct SettingsView: View {
                 }
                 .padding(6)
             }
+
+            VStack(spacing: 4) {
+                Text("GTA VI Watch \(AppInfo.version) — © 2026 Torjant")
+                    .foregroundColor(Vice.textDim)
+                HStack(spacing: 4) {
+                    Text(tr.licenseNotice)
+                        .foregroundColor(Vice.textDim)
+                    Button("GNU AGPL v3") { SafeOpen.open("https://www.gnu.org/licenses/agpl-3.0.html") }
+                        .buttonStyle(.plain)
+                        .foregroundStyle(Vice.sunset)
+                }
+            }
+            .font(.system(size: 10))
+            .frame(maxWidth: .infinity)
 
             HStack {
                 Credit()
