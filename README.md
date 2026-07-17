@@ -8,9 +8,9 @@ Built with SwiftUI. **Zero dependencies, no API keys, ~1.3 MB, sandboxed.** Fren
 
 > 🇫🇷 **Version française plus bas** — [cliquer ici](#-version-française)
 
-<!-- SCREENSHOT: décommente la ligne suivante après avoir ajouté docs/screenshot.png
 ![GTA VI Watch dashboard](docs/screenshot.png)
--->
+
+<p align="center"><sub>Dashboard — live stock, GTA VI countdown, official & press feeds · <a href="docs/screenshot-settings.png">Settings screenshot</a></sub></p>
 
 ## Features
 
