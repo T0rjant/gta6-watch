@@ -29,14 +29,14 @@ Built with SwiftUI. **Zero dependencies, no API keys, ~1.3 MB, sandboxed.** Fren
 
 1. **Download** the `.pkg` file from the latest [Release](../../releases).
 2. **Open it.** Because the app isn't notarized by Apple (I don't have a paid Developer account), macOS Gatekeeper will block it the first time with a message like *"Apple could not verify this app is free of malware."* This is expected here's how to get past it:
-   - **Right-click** the `.pkg` → **Open** → in the dialog, click **Open** again. *(Or: double-click, let it fail, then go to  **System Settings → Privacy & Security**, scroll down, and click **"Open Anyway"**.)*
+    **Right-click** the `.pkg` → **Open** → in the dialog, click **Open** again. *(Or: double-click, let it fail, then go to  **System Settings → Privacy & Security**, scroll down, and click **"Open Anyway"**.)*
 3. Follow the installer the app is placed in your **Applications** folder.
 4. **Launch it** from Applications. macOS may show the same warning once more for the app itself → **right-click → Open** again. After that, it opens normally forever.
 5. The app lives in your **menu bar** (top of the screen, next to the clock). Click its icon anytime; **"Open dashboard"** shows the full window.
 
 > 🔒 Why the warning? It's just Gatekeeper being cautious with apps not signed by a paid Apple account — **not** a sign the app is unsafe. The full source code is right here in this repo, so you can verify there's nothing hidden. Only install it because you trust the source.
 
-**Optional — launch at login:** open the app's **Settings (⚙️)** and toggle *Launch at login* so it watches for you automatically every time you start your Mac.
+**Optional launch at login:** open the app's **Settings (⚙️)** and toggle *Launch at login* so it watches for you automatically every time you start your Mac.
 
 Prefer zero warnings? **Build it yourself in 30 seconds** (see below) compiled on your own machine, macOS trusts it with no prompt.
 
@@ -102,20 +102,20 @@ Sources/
 
 1. **Télécharge** le fichier `.pkg` depuis la dernière [Release](../../releases).
 2. **Ouvre-le.** Comme l'app n'est pas notariée par Apple (je n'ai pas de compte développeur payant), macOS va la bloquer la première fois avec un message du type *« Apple ne peut pas vérifier que cette app ne contient pas de logiciel malveillant »*. C'est normal voici comment passer :
-   - **Clic droit** sur le `.pkg` → **Ouvrir** → dans la fenêtre, clique **Ouvrir** à nouveau. *(Ou : double-clic, laisse échouer, puis va dans **Réglages Système → Confidentialité et sécurité**, descends en bas, et clique **« Ouvrir quand même »**.)*
+    **Clic droit** sur le `.pkg` → **Ouvrir** → dans la fenêtre, clique **Ouvrir** à nouveau. *(Ou : double-clic, laisse échouer, puis va dans **Réglages Système → Confidentialité et sécurité**, descends en bas, et clique **« Ouvrir quand même »**.)*
 3. Suis l'installateur : l'app est placée dans ton dossier **Applications**.
 4. **Lance-la** depuis Applications. macOS peut réafficher le même avertissement une fois pour l'app elle-même → **clic droit → Ouvrir** encore. Ensuite elle s'ouvre normalement pour toujours.
 5. L'app vit dans ta **barre de menus** (en haut de l'écran, à côté de l'heure). Clique son icône quand tu veux ; **« Ouvrir le dashboard »** affiche la fenêtre complète.
 
-> 🔒 Pourquoi l'avertissement ? C'est juste Gatekeeper, prudent avec les apps non signées par un compte Apple payant — **pas** un signe que l'app est dangereuse. Tout le code source est ici dans ce dépôt : tu peux vérifier qu'il n'y a rien de caché. Ne l'installe que si tu fais confiance à la source.
+> 🔒 Pourquoi l'avertissement ? C'est juste Gatekeeper, prudent avec les apps non signées par un compte Apple payant **pas** un signe que l'app est dangereuse. Tout le code source est ici dans ce dépôt : tu peux vérifier qu'il n'y a rien de caché. Ne l'installe que si tu fais confiance à la source.
 
-**Option — lancer au démarrage :** ouvre les **Réglages (⚙️)** de l'app et active *Lancer au démarrage du Mac* pour qu'elle veille automatiquement à chaque démarrage.
+**Option lancer au démarrage :** ouvre les **Réglages (⚙️)** de l'app et active *Lancer au démarrage du Mac* pour qu'elle veille automatiquement à chaque démarrage.
 
-Alternative sans aucun avertissement : compiler soi-même (30 secondes, section *Build from source* ci-dessus) — compilé sur ta machine, macOS lui fait confiance sans rien demander.
+Alternative sans aucun avertissement : compiler soi-même (30 secondes, section *Build from source* ci-dessus) compilé sur ta machine, macOS lui fait confiance sans rien demander.
 
 ## Sécurité
 
-App Sandbox (réseau sortant uniquement), Hardened Runtime, HTTPS strict, filtre de liens, **zéro donnée collectée** — pas de télémétrie, pas de compte, pas de serveur.
+App Sandbox (réseau sortant uniquement), Hardened Runtime, HTTPS strict, filtre de liens, **zéro donnée collectée** pas de télémétrie, pas de compte, pas de serveur.
 
 ---
 
