@@ -6,7 +6,7 @@ cd "$(dirname "$0")"
 APP_NAME="GTA VI Watch"
 BINARY="GTA6Watch"
 BUNDLE_ID="com.torjant.gta6watch"
-VERSION="1.4"
+VERSION="1.5"
 APP_DIR="build/$APP_NAME.app"
 
 echo "── Nettoyage"

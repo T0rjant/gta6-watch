@@ -18,6 +18,7 @@ Built with SwiftUI. **Zero dependencies, no API keys, ~1.3 MB, sandboxed.** Fren
 - 🖥️ **Menu bar ticker** TTWO price always visible next to your clock; click for a quick summary popover
 - 📢 **Official communication** Take-Two Investor Relations press releases + Rockstar Games Newswire
 - 📰 **Press & marketing coverage** gaming and finance articles, auto-tagged (🎬 Trailer, 💹 Finance, 📣 Marketing, 📅 Release)
+- 📖 **Expandable article cards** click any headline to unfold a sleek animated panel with the summary (when available), full date, and a direct *Read article* button
 - 🔔 **Native macOS alerts** official announcements, stock moves beyond your threshold (1–10 %), new articles
 - 🌴 **GTA VI release countdown** days left until launch, editable if Rockstar shifts the date
 - 🌍 **Bilingual** switch French/English: UI *and* news sources follow
@@ -91,6 +92,7 @@ Sources/
 - 🖥️ **Ticker barre de menus** le cours TTWO toujours visible à côté de l'heure ; un clic ouvre le résumé
 - 📢 **Communication officielle** communiqués Take-Two IR + Rockstar Newswire
 - 📰 **Presse & marketing** articles auto-étiquetés (🎬 Trailer, 💹 Finance, 📣 Marketing, 📅 Sortie)
+- 📖 **Cartes d'articles dépliables** clique sur un titre pour déplier un panneau animé avec le résumé (si disponible), la date complète et un bouton *Lire l'article*
 - 🔔 **Alertes macOS natives** annonces officielles, mouvement de bourse au-delà de ton seuil (1–10 %), nouveaux articles
 - 🌴 **Compte à rebours GTA VI** date modifiable si Rockstar re-décale
 - 🌍 **Bilingue** le français/anglais bascule l'interface **et** les sources d'actus

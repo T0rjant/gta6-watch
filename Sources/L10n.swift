@@ -58,6 +58,11 @@ struct L10n {
     var newsLbl: String { en ? "News:" : "Actualités :" }
     var batteryNote: String { en ? "Longer intervals use less battery." : "Des intervalles plus longs consomment moins de batterie." }
     var close: String { en ? "Close" : "Fermer" }
+
+    // Panneau de détail d'un article
+    var readArticle: String { en ? "Read article ↗" : "Lire l'article ↗" }
+    var published: String { en ? "Published" : "Publié" }
+
     var licenseNotice: String {
         en ? "Free software, no warranty — released under the"
            : "Logiciel libre, sans garantie — publié sous"
@@ -122,6 +127,14 @@ enum Fmt {
         f.locale = Locale(identifier: localeID)
         f.unitsStyle = .short
         return f.localizedString(for: d, relativeTo: Date())
+    }
+
+    static func dateTime(_ d: Date, _ localeID: String) -> String {
+        let f = DateFormatter()
+        f.locale = Locale(identifier: localeID)
+        f.dateStyle = .long
+        f.timeStyle = .short
+        return f.string(from: d)
     }
 
     static func longDate(_ d: Date, _ localeID: String) -> String {

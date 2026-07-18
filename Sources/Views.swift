@@ -319,38 +319,84 @@ struct NewsRow: View {
     let item: NewsItem
     let accent: Color
     @State private var hover = false
+    @State private var expanded = false
 
     var body: some View {
         let tr = store.tr
-        Button {
-            SafeOpen.open(item.link)
-        } label: {
-            VStack(alignment: .leading, spacing: 5) {
-                Text(item.title)
-                    .font(.system(size: 12.5, weight: .semibold))
-                    .foregroundColor(.white)
-                    .multilineTextAlignment(.leading)
-                    .lineLimit(3)
-                HStack(spacing: 6) {
-                    Text(item.sourceName).font(.system(size: 10, weight: .bold)).foregroundColor(accent)
-                    Text("·").foregroundColor(Vice.textDim)
-                    Text(Fmt.relative(item.date, tr.localeID)).font(.system(size: 10)).foregroundColor(Vice.textDim)
-                    Spacer()
-                    ForEach(item.tags, id: \.self) { tag in
-                        Text("\(tag.emoji) \(tr.tagName(tag))")
-                            .font(.system(size: 9, weight: .semibold))
-                            .padding(.horizontal, 6).padding(.vertical, 2)
-                            .background(Vice.cardLight)
-                            .foregroundColor(.white.opacity(0.8))
-                            .clipShape(Capsule())
+        VStack(alignment: .leading, spacing: 0) {
+            // Ligne principale : un clic déplie/replie le panneau de détail
+            Button {
+                withAnimation(.spring(response: 0.32, dampingFraction: 0.82)) { expanded.toggle() }
+            } label: {
+                VStack(alignment: .leading, spacing: 5) {
+                    Text(item.title)
+                        .font(.system(size: 12.5, weight: .semibold))
+                        .foregroundColor(.white)
+                        .multilineTextAlignment(.leading)
+                        .lineLimit(3)
+                    HStack(spacing: 6) {
+                        Text(item.sourceName).font(.system(size: 10, weight: .bold)).foregroundColor(accent)
+                        Text("·").foregroundColor(Vice.textDim)
+                        Text(Fmt.relative(item.date, tr.localeID)).font(.system(size: 10)).foregroundColor(Vice.textDim)
+                        Spacer()
+                        ForEach(item.tags, id: \.self) { tag in
+                            Text("\(tag.emoji) \(tr.tagName(tag))")
+                                .font(.system(size: 9, weight: .semibold))
+                                .padding(.horizontal, 6).padding(.vertical, 2)
+                                .background(Vice.cardLight)
+                                .foregroundColor(.white.opacity(0.8))
+                                .clipShape(Capsule())
+                        }
+                        Image(systemName: "chevron.down")
+                            .font(.system(size: 8, weight: .bold))
+                            .foregroundColor(Vice.textDim)
+                            .rotationEffect(.degrees(expanded ? 180 : 0))
                     }
                 }
+                .padding(10)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .contentShape(Rectangle())
             }
-            .padding(10)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(RoundedRectangle(cornerRadius: 10).fill(hover ? Vice.cardLight : Vice.bg.opacity(0.5)))
+            .buttonStyle(.plain)
+
+            // Panneau de détail
+            if expanded {
+                VStack(alignment: .leading, spacing: 8) {
+                    Rectangle()
+                        .fill(accent.opacity(0.35))
+                        .frame(height: 1)
+                    if !item.summary.isEmpty {
+                        Text(item.summary)
+                            .font(.system(size: 11.5))
+                            .foregroundColor(.white.opacity(0.85))
+                            .lineSpacing(2.5)
+                            .multilineTextAlignment(.leading)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    HStack {
+                        Label("\(tr.published) \(Fmt.dateTime(item.date, tr.localeID))", systemImage: "clock")
+                            .font(.system(size: 10))
+                            .foregroundColor(Vice.textDim)
+                        Spacer()
+                        Button {
+                            SafeOpen.open(item.link)
+                        } label: {
+                            Text(tr.readArticle)
+                                .font(.system(size: 10.5, weight: .bold, design: .rounded))
+                                .padding(.horizontal, 10).padding(.vertical, 5)
+                                .background(Capsule().fill(Vice.sunset.opacity(0.9)))
+                                .foregroundColor(.white)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                .padding(.horizontal, 10)
+                .padding(.bottom, 10)
+                .transition(.opacity.combined(with: .move(edge: .top)))
+            }
         }
-        .buttonStyle(.plain)
+        .background(RoundedRectangle(cornerRadius: 10).fill(expanded || hover ? Vice.cardLight : Vice.bg.opacity(0.5)))
+        .clipShape(RoundedRectangle(cornerRadius: 10))
         .onHover { hover = $0 }
     }
 }

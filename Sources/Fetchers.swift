@@ -118,10 +118,17 @@ struct RSSRawItem {
                 cleanTitle = String(cleanTitle[..<idx.lowerBound])
             }
         }
-        let plainSummary = description
+        var plainSummary = description
             .replacingOccurrences(of: "<[^>]+>", with: "", options: .regularExpression)
             .replacingOccurrences(of: "&nbsp;", with: " ")
+            .replacingOccurrences(of: "&amp;", with: "&")
+            .replacingOccurrences(of: "&#39;", with: "'")
+            .replacingOccurrences(of: "&quot;", with: "\"")
             .trimmingCharacters(in: .whitespacesAndNewlines)
+        // Google News répète le titre en guise de description : dans ce cas, pas de vrai résumé
+        if plainSummary.hasPrefix(String(cleanTitle.prefix(30))) || plainSummary.count < 40 {
+            plainSummary = ""
+        }
         return NewsItem(
             id: guid.isEmpty ? link : guid,
             title: cleanTitle.trimmingCharacters(in: .whitespacesAndNewlines),
@@ -129,7 +136,7 @@ struct RSSRawItem {
             date: RSSParser.parseDate(pubDate) ?? Date(),
             sourceName: src,
             category: category,
-            summary: String(plainSummary.prefix(300))
+            summary: String(plainSummary.prefix(400))
         )
     }
 }
