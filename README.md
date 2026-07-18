@@ -10,7 +10,7 @@ Built with SwiftUI. **Zero dependencies, no API keys, ~1.3 MB, sandboxed.** Fren
 
 ![GTA VI Watch dashboard](docs/screenshot.png)
 
-<p align="center"><sub>Dashboard — live stock, GTA VI countdown, official & press feeds · <a href="docs/screenshot-settings.png">Settings screenshot</a></sub></p>
+<p align="center"><sub>Dashboard live stock, GTA VI countdown, official & press feeds · <a href="docs/screenshot-settings.png">Settings screenshot</a></sub></p>
 
 ## Features
 
@@ -28,9 +28,9 @@ Built with SwiftUI. **Zero dependencies, no API keys, ~1.3 MB, sandboxed.** Fren
 **Requirements**: Apple Silicon Mac (M1, M2, M3, M4 or newer), macOS 14 or later.
 
 1. **Download** the `.pkg` file from the latest [Release](../../releases).
-2. **Open it.** Because the app isn't notarized by Apple (I don't have a paid Developer account), macOS Gatekeeper will block it the first time with a message like *"Apple could not verify this app is free of malware."* This is expected — here's how to get past it:
+2. **Open it.** Because the app isn't notarized by Apple (I don't have a paid Developer account), macOS Gatekeeper will block it the first time with a message like *"Apple could not verify this app is free of malware."* This is expected here's how to get past it:
    - **Right-click** the `.pkg` → **Open** → in the dialog, click **Open** again. *(Or: double-click, let it fail, then go to  **System Settings → Privacy & Security**, scroll down, and click **"Open Anyway"**.)*
-3. Follow the installer — the app is placed in your **Applications** folder.
+3. Follow the installer the app is placed in your **Applications** folder.
 4. **Launch it** from Applications. macOS may show the same warning once more for the app itself → **right-click → Open** again. After that, it opens normally forever.
 5. The app lives in your **menu bar** (top of the screen, next to the clock). Click its icon anytime; **"Open dashboard"** shows the full window.
 
@@ -38,7 +38,7 @@ Built with SwiftUI. **Zero dependencies, no API keys, ~1.3 MB, sandboxed.** Fren
 
 **Optional — launch at login:** open the app's **Settings (⚙️)** and toggle *Launch at login* so it watches for you automatically every time you start your Mac.
 
-Prefer zero warnings? **Build it yourself in 30 seconds** (see below) — compiled on your own machine, macOS trusts it with no prompt.
+Prefer zero warnings? **Build it yourself in 30 seconds** (see below) compiled on your own machine, macOS trusts it with no prompt.
 
 ## Build from source
 
@@ -101,9 +101,9 @@ Sources/
 **Prérequis** : Mac Apple Silicon (M1, M2, M3, M4 ou plus récent), macOS 14 ou plus.
 
 1. **Télécharge** le fichier `.pkg` depuis la dernière [Release](../../releases).
-2. **Ouvre-le.** Comme l'app n'est pas notariée par Apple (je n'ai pas de compte développeur payant), macOS va la bloquer la première fois avec un message du type *« Apple ne peut pas vérifier que cette app ne contient pas de logiciel malveillant »*. C'est normal — voici comment passer :
+2. **Ouvre-le.** Comme l'app n'est pas notariée par Apple (je n'ai pas de compte développeur payant), macOS va la bloquer la première fois avec un message du type *« Apple ne peut pas vérifier que cette app ne contient pas de logiciel malveillant »*. C'est normal voici comment passer :
    - **Clic droit** sur le `.pkg` → **Ouvrir** → dans la fenêtre, clique **Ouvrir** à nouveau. *(Ou : double-clic, laisse échouer, puis va dans **Réglages Système → Confidentialité et sécurité**, descends en bas, et clique **« Ouvrir quand même »**.)*
-3. Suis l'installateur — l'app est placée dans ton dossier **Applications**.
+3. Suis l'installateur : l'app est placée dans ton dossier **Applications**.
 4. **Lance-la** depuis Applications. macOS peut réafficher le même avertissement une fois pour l'app elle-même → **clic droit → Ouvrir** encore. Ensuite elle s'ouvre normalement pour toujours.
 5. L'app vit dans ta **barre de menus** (en haut de l'écran, à côté de l'heure). Clique son icône quand tu veux ; **« Ouvrir le dashboard »** affiche la fenêtre complète.
 
