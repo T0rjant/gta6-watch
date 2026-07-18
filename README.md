@@ -6,7 +6,7 @@
 
 Built with SwiftUI. **Zero dependencies, no API keys, ~1.3 MB, sandboxed.** French 🇫🇷 / English 🇺🇸 interface. Made by **[Torjant](https://github.com/T0rjant)**.
 
-> 🇫🇷 **Version française plus bas** — [cliquer ici](#-version-française)
+> 🇫🇷 **Version française plus bas** [cliquer ici](#-version-française)
 
 ![GTA VI Watch dashboard](docs/screenshot.png)
 
@@ -14,13 +14,13 @@ Built with SwiftUI. **Zero dependencies, no API keys, ~1.3 MB, sandboxed.** Fren
 
 ## Features
 
-- 📊 **Live TTWO stock** — price, day change, intraday chart, volume, 52-week range, next earnings date, **USD or EUR** (real-time exchange rate)
-- 🖥️ **Menu bar ticker** — TTWO price always visible next to your clock; click for a quick summary popover
-- 📢 **Official communication** — Take-Two Investor Relations press releases + Rockstar Games Newswire
-- 📰 **Press & marketing coverage** — gaming and finance articles, auto-tagged (🎬 Trailer, 💹 Finance, 📣 Marketing, 📅 Release)
-- 🔔 **Native macOS alerts** — official announcements, stock moves beyond your threshold (1–10 %), new articles
-- 🌴 **GTA VI release countdown** — days left until launch, editable if Rockstar shifts the date
-- 🌍 **Bilingual** — switch French/English: UI *and* news sources follow
+- 📊 **Live TTWO stock** price, day change, intraday chart, volume, 52-week range, next earnings date, **USD or EUR** (real-time exchange rate)
+- 🖥️ **Menu bar ticker** TTWO price always visible next to your clock; click for a quick summary popover
+- 📢 **Official communication** Take-Two Investor Relations press releases + Rockstar Games Newswire
+- 📰 **Press & marketing coverage** gaming and finance articles, auto-tagged (🎬 Trailer, 💹 Finance, 📣 Marketing, 📅 Release)
+- 🔔 **Native macOS alerts** official announcements, stock moves beyond your threshold (1–10 %), new articles
+- 🌴 **GTA VI release countdown** days left until launch, editable if Rockstar shifts the date
+- 🌍 **Bilingual** switch French/English: UI *and* news sources follow
 - 🚀 **Launch at login**, closes to the menu bar, ~0 % CPU when idle
 
 ## Install
@@ -61,10 +61,10 @@ No API keys, no account, no server.
 
 ## Security & privacy
 
-- **App Sandbox** — outbound network connections only; no access to your files, mic, or camera; nothing listens for incoming connections
+- **App Sandbox** outbound network connections only; no access to your files, mic, or camera; nothing listens for incoming connections
 - **Hardened Runtime** + strict **App Transport Security** (HTTPS only)
-- **Link filtering** — only `http(s)` links from feeds can open, in your default browser
-- **Zero data collected** — no telemetry, no analytics, no account; the only traffic is read-only requests to the three public sources above
+- **Link filtering** only `http(s)` links from feeds can open, in your default browser
+- **Zero data collected** no telemetry, no analytics, no account; the only traffic is read-only requests to the three public sources above
 
 ## Code architecture
 
@@ -87,13 +87,13 @@ Sources/
 
 ## Fonctionnalités
 
-- 📊 **Bourse TTWO en direct** — cours, variation, graphique intraday, volume, 52 semaines, prochains résultats, **USD ou EUR** (taux de change en temps réel)
-- 🖥️ **Ticker barre de menus** — le cours TTWO toujours visible à côté de l'heure ; un clic ouvre le résumé
-- 📢 **Communication officielle** — communiqués Take-Two IR + Rockstar Newswire
-- 📰 **Presse & marketing** — articles auto-étiquetés (🎬 Trailer, 💹 Finance, 📣 Marketing, 📅 Sortie)
-- 🔔 **Alertes macOS natives** — annonces officielles, mouvement de bourse au-delà de ton seuil (1–10 %), nouveaux articles
-- 🌴 **Compte à rebours GTA VI** — date modifiable si Rockstar re-décale
-- 🌍 **Bilingue** — le français/anglais bascule l'interface **et** les sources d'actus
+- 📊 **Bourse TTWO en direct** cours, variation, graphique intraday, volume, 52 semaines, prochains résultats, **USD ou EUR** (taux de change en temps réel)
+- 🖥️ **Ticker barre de menus** le cours TTWO toujours visible à côté de l'heure ; un clic ouvre le résumé
+- 📢 **Communication officielle** communiqués Take-Two IR + Rockstar Newswire
+- 📰 **Presse & marketing** articles auto-étiquetés (🎬 Trailer, 💹 Finance, 📣 Marketing, 📅 Sortie)
+- 🔔 **Alertes macOS natives** annonces officielles, mouvement de bourse au-delà de ton seuil (1–10 %), nouveaux articles
+- 🌴 **Compte à rebours GTA VI** date modifiable si Rockstar re-décale
+- 🌍 **Bilingue** le français/anglais bascule l'interface **et** les sources d'actus
 - 🚀 **Lancement au démarrage**, vit dans la barre de menus, ~0 % CPU au repos
 
 ## Installation
