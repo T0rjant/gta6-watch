@@ -1,4 +1,4 @@
-# GTA VI Watch 🌴 — GTA 6 & Take-Two (TTWO) tracker for macOS
+# GTA VI Watch 🌴 GTA 6 & Take-Two (TTWO) tracker for macOS
 
 ![Platform](https://img.shields.io/badge/platform-macOS%2014%2B-black) ![Chip](https://img.shields.io/badge/Apple%20Silicon-native-orange) ![Swift](https://img.shields.io/badge/Swift-6-F05138) ![Size](https://img.shields.io/badge/size-~1.3%20MB-ff2e83) ![License](https://img.shields.io/badge/license-AGPL--3.0-7b2ff7)
 
