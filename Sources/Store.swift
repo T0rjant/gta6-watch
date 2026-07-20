@@ -4,6 +4,7 @@
 
 import Foundation
 import SwiftUI
+import AppKit
 import ServiceManagement
 
 @MainActor
@@ -11,6 +12,7 @@ final class AppStore: ObservableObject {
     @Published var quote = StockQuote()
     @Published var officialNews: [NewsItem] = []
     @Published var pressNews: [NewsItem] = []
+    @Published var xNews: [NewsItem] = []
     @Published var earningsDate: Date?
     @Published var lastRefresh: Date?
     @Published var isRefreshing = false
@@ -39,6 +41,57 @@ final class AppStore: ObservableObject {
     // Date de sortie GTA VI (modifiable dans les réglages si Rockstar re-décale)
     @Published var releaseDate: Date {
         didSet { UserDefaults.standard.set(releaseDate.timeIntervalSince1970, forKey: "releaseDate") }
+    }
+
+    // Période du graphique ("1d", "5d", "1mo", "6mo", "1y")
+    @Published var chartRange: String {
+        didSet {
+            guard chartRange != oldValue else { return }
+            UserDefaults.standard.set(chartRange, forKey: "chartRange")
+            Task { await refreshStock(force: true) }
+        }
+    }
+
+    // Position personnelle : stockée uniquement en local sur ce Mac, jamais envoyée nulle part
+    @Published var positionShares: Double {
+        didSet { UserDefaults.standard.set(positionShares, forKey: "positionShares") }
+    }
+    @Published var positionBuyPrice: Double {   // prix d'achat moyen, en $ (monnaie de cotation)
+        didSet { UserDefaults.standard.set(positionBuyPrice, forKey: "positionBuyPrice") }
+    }
+    var hasPosition: Bool { positionShares > 0 && positionBuyPrice > 0 }
+
+    // Seuils d'alerte de prix personnalisés (en $, 0 = désactivé)
+    @Published var alertHighPrice: Double {
+        didSet { UserDefaults.standard.set(alertHighPrice, forKey: "alertHighPrice") }
+    }
+    @Published var alertLowPrice: Double {
+        didSet { UserDefaults.standard.set(alertLowPrice, forKey: "alertLowPrice") }
+    }
+
+    // Mise à jour de l'app
+    @Published var updateStatus: UpdateStatus = .none
+
+    // Comptes X suivis (séparés par des virgules), modifiables dans les réglages
+    @Published var xHandles: String {
+        didSet {
+            guard xHandles != oldValue else { return }
+            UserDefaults.standard.set(xHandles, forKey: "xHandles")
+            Task { await refreshNews() }
+        }
+    }
+    @AppStorage("alertX") var alertX = false
+
+    // Trailers officiels (les 2 connus + détection auto depuis le flux Rockstar)
+    @Published var trailers: [Trailer] = Trailer.known
+
+    // Articles lus (marqués au clic)
+    @Published private(set) var readIDs: Set<String>
+    func isRead(_ id: String) -> Bool { readIDs.contains(id) }
+    func markRead(_ id: String) {
+        guard readIDs.insert(id).inserted else { return }
+        if readIDs.count > 1000 { readIDs = Set(readIDs.suffix(500)) }
+        UserDefaults.standard.set(Array(readIDs), forKey: "readIDs")
     }
 
     // Lancement automatique à l'ouverture de session
@@ -88,12 +141,49 @@ final class AppStore: ObservableObject {
         releaseDate = savedRelease > 0
             ? Date(timeIntervalSince1970: savedRelease)
             : DateComponents(calendar: .init(identifier: .gregorian), year: 2026, month: 11, day: 19).date ?? Date()
+        chartRange = d.string(forKey: "chartRange") ?? "1d"
+        positionShares = d.double(forKey: "positionShares")
+        positionBuyPrice = d.double(forKey: "positionBuyPrice")
+        alertHighPrice = d.double(forKey: "alertHighPrice")
+        alertLowPrice = d.double(forKey: "alertLowPrice")
+        readIDs = Set(d.stringArray(forKey: "readIDs") ?? [])
+        // Insiders GTA VI par défaut (vérifiés) : Ben, Tex2 (ex-Tez2), Tom Henderson, Chris Klippel
+        let defaultHandles = "videotech, TexFunz2, _Tom_Henderson_, Chris_Klippel"
+        let savedHandles = d.string(forKey: "xHandles")
+        xHandles = (savedHandles == nil || savedHandles == "videotech") ? defaultHandles : savedHandles!
     }
 
     func start() {
         Notifier.requestPermission()
         Task { await refreshAll() }
+        Task { await checkForUpdate() }
         scheduleTimers()
+    }
+
+    // MARK: Mise à jour de l'app
+
+    private var lastUpdateCheck: Date = .distantPast
+
+    func checkForUpdate() async {
+        guard Date().timeIntervalSince(lastUpdateCheck) > 6 * 3600 else { return }
+        lastUpdateCheck = Date()
+        if case .none = updateStatus,
+           let info = try? await Fetchers.checkUpdate(current: AppInfo.version) {
+            updateStatus = .available(info)
+        }
+    }
+
+    /// Mise à jour en un clic : télécharge le .pkg puis ouvre l'installateur macOS.
+    func installUpdate() async {
+        guard case .available(let info) = updateStatus else { return }
+        updateStatus = .downloading
+        do {
+            let pkg = try await Fetchers.downloadUpdate(info)
+            NSWorkspace.shared.open(pkg)
+            updateStatus = .launched
+        } catch {
+            updateStatus = .available(info)   // on pourra réessayer
+        }
     }
 
     func scheduleTimers() {
@@ -110,15 +200,42 @@ final class AppStore: ObservableObject {
         newsTimer?.tolerance = 120
     }
 
-    /// Heures d'ouverture du NASDAQ (9h30–16h00 à New York, avec une petite marge), lun–ven.
-    private var marketIsOpen: Bool {
+    /// Sessions du NASDAQ (heure de New York, lun–ven) :
+    /// avant-Bourse 4h–9h30, séance 9h30–16h, après-Bourse 16h–20h, fermé sinon.
+    enum MarketSession { case pre, open, post, closed }
+
+    var marketSession: MarketSession {
         var cal = Calendar(identifier: .gregorian)
         cal.timeZone = TimeZone(identifier: "America/New_York") ?? .current
         let now = Date()
         let weekday = cal.component(.weekday, from: now)
-        guard (2...6).contains(weekday) else { return false }
+        guard (2...6).contains(weekday) else { return .closed }
         let minutes = cal.component(.hour, from: now) * 60 + cal.component(.minute, from: now)
-        return minutes >= 9 * 60 + 15 && minutes <= 16 * 60 + 15
+        switch minutes {
+        case (4 * 60)..<(9 * 60 + 30): return .pre
+        case (9 * 60 + 30)...(16 * 60): return .open
+        case (16 * 60 + 1)...(20 * 60): return .post
+        default: return .closed
+        }
+    }
+
+    var marketIsOpen: Bool { marketSession == .open }
+
+    /// Prochaine ouverture du NASDAQ (9h30 à New York), affichée en heure locale de l'utilisateur.
+    var nextMarketOpen: Date {
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = TimeZone(identifier: "America/New_York") ?? .current
+        var day = Date()
+        for _ in 0..<8 {
+            let weekday = cal.component(.weekday, from: day)
+            if (2...6).contains(weekday),
+               let open = cal.date(bySettingHour: 9, minute: 30, second: 0, of: day),
+               open > Date() {
+                return open
+            }
+            day = cal.date(byAdding: .day, value: 1, to: day) ?? day
+        }
+        return Date()
     }
 
     func refreshAll() async {
@@ -151,13 +268,14 @@ final class AppStore: ObservableObject {
     // MARK: Bourse
 
     func refreshStock(force: Bool = false) async {
-        // Marché fermé (nuit, week-end) : une requête par heure suffit
-        if !force, !marketIsOpen, quote.price > 0,
+        // Rythme normal dès qu'il y a de la cotation (séance, avant/après-Bourse) ;
+        // mode économie (1 requête/heure) uniquement la nuit profonde et le week-end
+        if !force, marketSession == .closed, quote.price > 0,
            Date().timeIntervalSince(lastStockFetch) < 3600 { return }
         lastStockFetch = Date()
         if currency == "EUR" { await refreshRate() }
         do {
-            let q = try await Fetchers.fetchQuote()
+            let q = try await Fetchers.fetchQuote(range: chartRange)
             quote = q
             errorMessage = nil
             checkStockAlert(q)
@@ -167,16 +285,34 @@ final class AppStore: ObservableObject {
     }
 
     private func checkStockAlert(_ q: StockQuote) {
-        guard alertStock, abs(q.changePct) >= stockThreshold else { return }
         let df = DateFormatter(); df.dateFormat = "yyyy-MM-dd"
-        let key = df.string(from: Date()) + (q.isUp ? "+" : "-")
-        guard lastStockAlertDay != key else { return }   // une alerte par jour et par direction
-        lastStockAlertDay = key
-        let arrow = q.isUp ? "📈" : "📉"
-        Notifier.notify(
-            title: "\(arrow) " + tr.notifStockTitle(Fmt.pct(q.changePct, tr.localeID)),
-            body: tr.notifStockBody(money(q.price), String(format: "%.0f", stockThreshold))
-        )
+        let today = df.string(from: Date())
+
+        // Alerte de variation quotidienne (en %)
+        if alertStock, abs(q.changePct) >= stockThreshold {
+            let key = today + (q.isUp ? "+" : "-")
+            if lastStockAlertDay != key {   // une alerte par jour et par direction
+                lastStockAlertDay = key
+                let arrow = q.isUp ? "📈" : "📉"
+                Notifier.notify(
+                    title: "\(arrow) " + tr.notifStockTitle(Fmt.pct(q.changePct, tr.localeID)),
+                    body: tr.notifStockBody(money(q.price), String(format: "%.0f", stockThreshold))
+                )
+            }
+        }
+
+        // Seuils de prix personnalisés (une alerte par jour et par seuil)
+        let d = UserDefaults.standard
+        if alertHighPrice > 0, q.price >= alertHighPrice, d.string(forKey: "thresholdHighDay") != today {
+            d.set(today, forKey: "thresholdHighDay")
+            Notifier.notify(title: "🎯 " + tr.notifThreshold(money(alertHighPrice)),
+                            body: "TTWO : \(money(q.price))")
+        }
+        if alertLowPrice > 0, q.price <= alertLowPrice, d.string(forKey: "thresholdLowDay") != today {
+            d.set(today, forKey: "thresholdLowDay")
+            Notifier.notify(title: "⚠️ " + tr.notifThresholdLow(money(alertLowPrice)),
+                            body: "TTWO : \(money(q.price))")
+        }
     }
 
     // MARK: Actualités
@@ -186,25 +322,42 @@ final class AppStore: ObservableObject {
         async let ir = try? Fetchers.fetchTakeTwoIR()
         async let bw = try? Fetchers.fetchBusinessWire(lang: lang)
         async let rockstar = try? Fetchers.fetchRockstar(lang: lang)
+        async let videos = try? Fetchers.fetchRockstarVideos()
         async let press = try? Fetchers.fetchPress(lang: lang)
-        let (irItems, bwItems, rsItems, pressItems) = await (ir ?? [], bw ?? [], rockstar ?? [], press ?? [])
+        let handles = xHandles.split(separator: ",").map(String.init)
+        async let xPosts = try? Fetchers.fetchXPosts(handles: handles)
+        let (irItems, bwItems, rsItems, videoItems, pressItems, xItems) = await (ir ?? [], bw ?? [], rockstar ?? [], videos ?? [], press ?? [], xPosts ?? [])
 
         // Déduplication grossière entre IR et BusinessWire (mêmes annonces)
         let irTitles = Set(irItems.map { $0.title.lowercased().prefix(40) })
         let bwFiltered = bwItems.filter { !irTitles.contains($0.title.lowercased().prefix(40)) }
-        let official = (irItems + bwFiltered + rsItems).sorted { $0.date > $1.date }
+        let official = (irItems + bwFiltered + rsItems + videoItems).sorted { $0.date > $1.date }
         let pressSorted = pressItems.sorted { $0.date > $1.date }
 
         if !official.isEmpty { officialNews = official }
         if !pressSorted.isEmpty { pressNews = pressSorted }
+        let xSorted = xItems.sorted { $0.date > $1.date }
+        if !xSorted.isEmpty { xNews = xSorted }
+
+        // Détection automatique de nouveaux trailers GTA VI — uniquement depuis
+        // le flux officiel Rockstar (impossible de se faire piéger par une fausse chaîne)
+        for video in videoItems {
+            let t = video.title.lowercased()
+            if (t.contains("grand theft auto vi") || t.contains("gta vi") || t.contains("gta 6")),
+               t.contains("trailer"),
+               !video.id.isEmpty,
+               !trailers.contains(where: { $0.id == video.id }) {
+                trailers.insert(Trailer(id: video.id, title: video.title), at: 0)
+            }
+        }
         earningsDate = RSSParser.extractEarningsDate(from: irItems.map(\.title)) ?? earningsDate
         lastRefresh = Date()
 
-        notifyNewItems(official: official, press: pressSorted)
+        notifyNewItems(official: official, press: pressSorted, x: xSorted)
     }
 
-    private func notifyNewItems(official: [NewsItem], press: [NewsItem]) {
-        let all = official + press
+    private func notifyNewItems(official: [NewsItem], press: [NewsItem], x: [NewsItem]) {
+        let all = official + press + x
         guard !all.isEmpty else { return }
 
         if firstNewsFetchDone {
@@ -216,6 +369,11 @@ final class AppStore: ObservableObject {
             if alertPress {
                 for item in press.filter({ !seenIDs.contains($0.id) }).prefix(3) {
                     Notifier.notify(title: "📰 \(item.sourceName)", body: item.title, link: item.link)
+                }
+            }
+            if alertX {
+                for item in x.filter({ !seenIDs.contains($0.id) }).prefix(2) {
+                    Notifier.notify(title: "🐦 \(item.sourceName)", body: item.title, link: item.link)
                 }
             }
         }

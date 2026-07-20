@@ -19,9 +19,48 @@ struct StockQuote: Equatable {
     var marketTime: Date = .distantPast
     var points: [Double] = []          // clôtures intraday (5 min)
 
+    // Cotation hors séance (pre-market / after-hours), si on est dans une de ces fenêtres
+    var extPrice: Double? = nil
+    var extIsPre: Bool = false
+
     var change: Double { price - previousClose }
     var changePct: Double { previousClose != 0 ? (change / previousClose) * 100 : 0 }
     var isUp: Bool { change >= 0 }
+    var extChangePct: Double {
+        guard let e = extPrice, price != 0 else { return 0 }
+        return (e - price) / price * 100
+    }
+}
+
+// MARK: - Trailers officiels GTA VI
+
+struct Trailer: Identifiable, Equatable {
+    let id: String        // identifiant de la vidéo YouTube
+    let title: String
+
+    var url: String { "https://www.youtube.com/watch?v=\(id)" }
+    var thumbnail: URL { URL(string: "https://i.ytimg.com/vi/\(id)/hqdefault.jpg")! }
+
+    /// Trailers officiels vérifiés (chaîne YouTube Rockstar Games).
+    /// Les suivants sont détectés automatiquement depuis le flux officiel.
+    static let known: [Trailer] = [
+        Trailer(id: "VQRLujxTm3c", title: "Grand Theft Auto VI Trailer 2"),
+        Trailer(id: "QdBZY2fkU-0", title: "Grand Theft Auto VI Trailer 1"),
+    ]
+}
+
+// MARK: - Mise à jour de l'app
+
+struct UpdateInfo: Equatable {
+    let version: String       // ex. "1.7"
+    let pkgURL: URL
+}
+
+enum UpdateStatus: Equatable {
+    case none
+    case available(UpdateInfo)
+    case downloading
+    case launched             // installateur ouvert
 }
 
 // MARK: - Actualités
@@ -29,6 +68,7 @@ struct StockQuote: Equatable {
 enum NewsCategory: String, Codable {
     case official   // Take-Two IR + Rockstar
     case press      // presse gaming & finance
+    case social     // posts X des insiders
 }
 
 enum NewsTag: String, CaseIterable {
@@ -90,6 +130,16 @@ struct YahooChartResponse: Decodable {
         let fiftyTwoWeekLow: Double?
         let regularMarketTime: Int?
         let longName: String?
+        let currentTradingPeriod: TradingPeriods?
+    }
+    struct TradingPeriods: Decodable {
+        let pre: Period?
+        let regular: Period?
+        let post: Period?
+    }
+    struct Period: Decodable {
+        let start: Int?
+        let end: Int?
     }
     struct Indicators: Decodable { let quote: [Quote] }
     struct Quote: Decodable { let close: [Double?]? }

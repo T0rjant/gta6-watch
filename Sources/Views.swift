@@ -19,6 +19,27 @@ enum SafeOpen {
     }
 }
 
+// MARK: - Animation de survol discrète
+
+/// Léger zoom + micro-éclaircissement au passage de la souris (0,15 s, sobre).
+/// N'anime que l'élément survolé : coût GPU négligeable.
+struct HoverLift: ViewModifier {
+    var scale: CGFloat = 1.04
+    @State private var hover = false
+
+    func body(content: Content) -> some View {
+        content
+            .scaleEffect(hover ? scale : 1)
+            .brightness(hover ? 0.07 : 0)
+            .animation(.easeOut(duration: 0.15), value: hover)
+            .onHover { hover = $0 }
+    }
+}
+
+extension View {
+    func hoverLift(_ scale: CGFloat = 1.04) -> some View { modifier(HoverLift(scale: scale)) }
+}
+
 // MARK: - Signature
 
 /// Signature de l'auteur, affichée dans le dashboard, le popover et les réglages.
@@ -73,13 +94,17 @@ struct DashboardView: View {
             header(tr)
             ScrollView {
                 VStack(spacing: 14) {
+                    UpdateBanner(store: store)
                     CountdownBanner(store: store)
                     StockCard(store: store)
+                    TrailersSection(store: store)
                     HStack(alignment: .top, spacing: 14) {
                         NewsColumn(store: store, title: tr.officialCol, icon: "megaphone.fill",
                                    subtitle: tr.officialSub, items: store.officialNews, accent: Vice.pink)
                         NewsColumn(store: store, title: tr.pressCol, icon: "newspaper.fill",
                                    subtitle: tr.pressSub, items: store.pressNews, accent: Vice.orange)
+                        NewsColumn(store: store, title: tr.xCol, icon: "bubble.left.and.bubble.right.fill",
+                                   subtitle: tr.xSub, items: store.xNews, accent: Vice.purple)
                     }
                     Credit()
                         .padding(.top, 2)
@@ -87,7 +112,7 @@ struct DashboardView: View {
                 .padding(14)
             }
         }
-        .frame(minWidth: 900, minHeight: 640)
+        .frame(minWidth: 1120, minHeight: 640)
         .background(Vice.bg)
         .preferredColorScheme(.dark)
         .sheet(isPresented: $showSettings) { SettingsView(store: store) }
@@ -103,9 +128,14 @@ struct DashboardView: View {
                 .foregroundColor(Vice.textDim)
             Spacer()
             if let d = store.lastRefresh {
-                Text("\(tr.updated) \(Fmt.relative(d, tr.localeID))")
-                    .font(.system(size: 11))
-                    .foregroundColor(Vice.textDim)
+                // TimelineView force le recalcul du texte toutes les 30 s,
+                // même quand aucune donnée ne bouge (marché fermé, week-end…)
+                TimelineView(.periodic(from: .now, by: 30)) { _ in
+                    let fresh = Date().timeIntervalSince(d) < 30
+                    Text("\(tr.updated) \(fresh ? tr.justNow : Fmt.relative(d, tr.localeID))")
+                        .font(.system(size: 11))
+                        .foregroundColor(Vice.textDim)
+                }
             }
             Button {
                 Task { await store.refreshAll() }
@@ -116,13 +146,68 @@ struct DashboardView: View {
             }
             .buttonStyle(.plain)
             .foregroundColor(.white)
+            .hoverLift(1.18)
             Button { showSettings = true } label: { Image(systemName: "gearshape.fill") }
                 .buttonStyle(.plain)
                 .foregroundColor(.white)
+                .hoverLift(1.18)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
         .background(Vice.card)
+    }
+}
+
+// MARK: - Mise à jour en un clic
+
+struct UpdateBanner: View {
+    @ObservedObject var store: AppStore
+
+    var body: some View {
+        let tr = store.tr
+        if store.updateStatus != .none {
+            HStack(spacing: 10) {
+                Text("🚀").font(.system(size: 20))
+                switch store.updateStatus {
+                case .available(let info):
+                    Text(tr.updateTitle("v" + info.version))
+                        .font(.system(size: 13, weight: .bold, design: .rounded))
+                        .foregroundColor(.white)
+                    Spacer()
+                    Button {
+                        Task { await store.installUpdate() }
+                    } label: {
+                        Text(tr.updateBtn)
+                            .font(.system(size: 12, weight: .heavy, design: .rounded))
+                            .padding(.horizontal, 14).padding(.vertical, 7)
+                            .background(Capsule().fill(Vice.sunset))
+                            .foregroundColor(.white)
+                    }
+                    .buttonStyle(.plain)
+                    .hoverLift(1.05)
+                case .downloading:
+                    Text(tr.updateDownloading)
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(.white)
+                    Spacer()
+                    ProgressView().controlSize(.small)
+                case .launched:
+                    Text(tr.updateLaunched)
+                        .font(.system(size: 12.5, weight: .semibold))
+                        .foregroundColor(.white)
+                    Spacer()
+                case .none:
+                    EmptyView()
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(Vice.card)
+                    .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(Vice.sunset.opacity(0.6), lineWidth: 1.5))
+            )
+        }
     }
 }
 
@@ -195,6 +280,17 @@ struct StockCard: View {
                             .font(.system(size: 12))
                             .foregroundColor(Vice.textDim)
                     }
+                    // Cotation hors séance (avant l'ouverture / après la clôture)
+                    if let ext = q.extPrice {
+                        HStack(spacing: 5) {
+                            Text(q.extIsPre ? "🌅" : "🌙").font(.system(size: 10))
+                            Text("\(q.extIsPre ? tr.preMarket : tr.afterHours) : \(store.money(ext))")
+                            Text(Fmt.pct(q.extChangePct, tr.localeID))
+                                .foregroundColor(q.extChangePct >= 0 ? Vice.green : Vice.red)
+                        }
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundColor(Vice.textDim)
+                    }
                 }
                 Spacer()
                 if let earnings = store.earningsDate {
@@ -212,8 +308,64 @@ struct StockCard: View {
                 }
             }
 
-            Sparkline(points: q.points, isUp: q.isUp, emptyText: tr.chartClosed)
+            // Sélecteur de période
+            HStack(spacing: 6) {
+                ForEach(["1d", "5d", "1mo", "6mo", "1y"], id: \.self) { r in
+                    Button { store.chartRange = r } label: {
+                        Text(tr.rangeLabel(r))
+                            .font(.system(size: 10, weight: .bold, design: .rounded))
+                            .padding(.horizontal, 10).padding(.vertical, 4)
+                            .background(Capsule().fill(store.chartRange == r ? AnyShapeStyle(Vice.sunset) : AnyShapeStyle(Vice.cardLight)))
+                            .foregroundColor(store.chartRange == r ? .white : Vice.textDim)
+                    }
+                    .buttonStyle(.plain)
+                    .hoverLift(1.08)
+                }
+                Spacer()
+                switch store.marketSession {
+                case .open:
+                    HStack(spacing: 5) {
+                        Circle().fill(Vice.green).frame(width: 6, height: 6)
+                        Text(tr.marketOpen)
+                    }
+                    .font(.system(size: 10, weight: .semibold))
+                    .foregroundColor(Vice.textDim)
+                case .pre:
+                    Text("🌅 \(tr.preSession) · \(tr.opensAt(Fmt.weekdayTime(store.nextMarketOpen, tr.localeID)))")
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundColor(Vice.orange)
+                case .post:
+                    Text("🌆 \(tr.postSession)")
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundColor(Vice.orange)
+                case .closed:
+                    EmptyView()
+                }
+            }
+
+            // Le graphique de la période choisie prend la couleur de sa tendance
+            let rangeUp = (q.points.last ?? 0) >= (q.points.first ?? 0)
+            Sparkline(points: q.points, isUp: rangeUp, emptyText: tr.chartClosed)
                 .frame(height: 110)
+                .overlay(alignment: .topTrailing) {
+                    if store.marketSession == .closed {
+                        HStack(spacing: 6) {
+                            Image(systemName: "moon.zzz.fill")
+                                .font(.system(size: 10))
+                                .foregroundColor(Vice.orange)
+                            Text("\(tr.marketClosed) · \(tr.opensAt(Fmt.weekdayTime(store.nextMarketOpen, tr.localeID)))")
+                                .font(.system(size: 10, weight: .semibold))
+                                .foregroundColor(.white.opacity(0.85))
+                        }
+                        .padding(.horizontal, 10).padding(.vertical, 6)
+                        .background(
+                            Capsule()
+                                .fill(Vice.bg.opacity(0.85))
+                                .overlay(Capsule().strokeBorder(Vice.orange.opacity(0.35), lineWidth: 1))
+                        )
+                        .padding(6)
+                    }
+                }
 
             HStack(spacing: 0) {
                 stat(tr.previousClose, store.money(q.previousClose))
@@ -221,6 +373,41 @@ struct StockCard: View {
                 stat(tr.volume, Fmt.volume(q.volume))
                 stat(tr.fiftyTwoWeeks, "\(store.money(q.fiftyTwoWeekLow))  ·  \(store.money(q.fiftyTwoWeekHigh))")
             }
+
+            // Ma position (uniquement si renseignée dans les réglages)
+            if store.hasPosition, q.price > 0 {
+                let value = q.price * store.positionShares
+                let gain = (q.price - store.positionBuyPrice) * store.positionShares
+                let pct = (q.price / store.positionBuyPrice - 1) * 100
+                let gainColor = gain >= 0 ? Vice.green : Vice.red
+                HStack(spacing: 10) {
+                    Text("💼").font(.system(size: 18))
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(tr.myPosition)
+                            .font(.system(size: 11, weight: .bold))
+                            .foregroundColor(.white)
+                        Text("\(tr.sharesCount(store.positionShares)) · \(tr.invested) \(store.money(store.positionBuyPrice * store.positionShares))")
+                            .font(.system(size: 10))
+                            .foregroundColor(Vice.textDim)
+                    }
+                    Spacer()
+                    VStack(alignment: .trailing, spacing: 2) {
+                        Text(store.money(value))
+                            .font(.system(size: 16, weight: .heavy, design: .rounded))
+                            .foregroundColor(.white)
+                        Text("\(gain >= 0 ? "+" : "")\(store.money(gain))  ·  \(Fmt.pct(pct, tr.localeID))")
+                            .font(.system(size: 11, weight: .bold, design: .rounded))
+                            .foregroundColor(gainColor)
+                    }
+                }
+                .padding(12)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Vice.cardLight)
+                        .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(gainColor.opacity(0.3), lineWidth: 1))
+                )
+            }
+
             if let err = store.errorMessage {
                 Text(err).font(.system(size: 11)).foregroundColor(Vice.red)
             }
@@ -281,6 +468,59 @@ struct Sparkline: View {
     }
 }
 
+// MARK: - Trailers officiels GTA VI
+
+struct TrailersSection: View {
+    @ObservedObject var store: AppStore
+
+    var body: some View {
+        let tr = store.tr
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 8) {
+                Image(systemName: "play.rectangle.fill").foregroundColor(Vice.pink)
+                Text(tr.trailersTitle).font(.system(size: 14, weight: .bold, design: .rounded)).foregroundColor(.white)
+                Spacer()
+                Text(tr.trailersSub).font(.system(size: 10)).foregroundColor(Vice.textDim)
+            }
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 12) {
+                    ForEach(store.trailers) { trailer in
+                        Button {
+                            SafeOpen.open(trailer.url)
+                        } label: {
+                            VStack(alignment: .leading, spacing: 6) {
+                                AsyncImage(url: trailer.thumbnail) { image in
+                                    image.resizable().aspectRatio(contentMode: .fill)
+                                } placeholder: {
+                                    Rectangle().fill(Vice.cardLight)
+                                        .overlay(ProgressView().controlSize(.small))
+                                }
+                                .frame(width: 210, height: 118)
+                                .clipShape(RoundedRectangle(cornerRadius: 10))
+                                .overlay(
+                                    Image(systemName: "play.circle.fill")
+                                        .font(.system(size: 30))
+                                        .foregroundStyle(.white.opacity(0.9))
+                                        .shadow(radius: 4)
+                                )
+                                Text(trailer.title)
+                                    .font(.system(size: 11, weight: .semibold))
+                                    .foregroundColor(.white)
+                                    .lineLimit(1)
+                                    .frame(width: 210, alignment: .leading)
+                            }
+                        }
+                        .buttonStyle(.plain)
+                        .hoverLift(1.03)
+                    }
+                }
+            }
+        }
+        .padding(14)
+        .background(RoundedRectangle(cornerRadius: 16).fill(Vice.card))
+    }
+}
+
 // MARK: - Colonnes d'actualités
 
 struct NewsColumn: View {
@@ -327,13 +567,19 @@ struct NewsRow: View {
             // Ligne principale : un clic déplie/replie le panneau de détail
             Button {
                 withAnimation(.spring(response: 0.32, dampingFraction: 0.82)) { expanded.toggle() }
+                if expanded { store.markRead(item.id) }
             } label: {
                 VStack(alignment: .leading, spacing: 5) {
-                    Text(item.title)
-                        .font(.system(size: 12.5, weight: .semibold))
-                        .foregroundColor(.white)
-                        .multilineTextAlignment(.leading)
-                        .lineLimit(3)
+                    HStack(alignment: .top, spacing: 6) {
+                        if !store.isRead(item.id) {
+                            Circle().fill(accent).frame(width: 6, height: 6).padding(.top, 4)
+                        }
+                        Text(item.title)
+                            .font(.system(size: 12.5, weight: .semibold))
+                            .foregroundColor(.white.opacity(store.isRead(item.id) ? 0.55 : 1))
+                            .multilineTextAlignment(.leading)
+                            .lineLimit(3)
+                    }
                     HStack(spacing: 6) {
                         Text(item.sourceName).font(.system(size: 10, weight: .bold)).foregroundColor(accent)
                         Text("·").foregroundColor(Vice.textDim)
@@ -371,6 +617,7 @@ struct NewsRow: View {
                             .foregroundColor(.white.opacity(0.85))
                             .lineSpacing(2.5)
                             .multilineTextAlignment(.leading)
+                            .lineLimit(4)
                             .fixedSize(horizontal: false, vertical: true)
                     }
                     HStack {
@@ -388,6 +635,7 @@ struct NewsRow: View {
                                 .foregroundColor(.white)
                         }
                         .buttonStyle(.plain)
+                        .hoverLift(1.06)
                     }
                 }
                 .padding(.horizontal, 10)
@@ -426,6 +674,38 @@ struct SettingsView: View {
                     }.pickerStyle(.segmented)
                     Toggle(tr.launchAtLogin, isOn: $store.launchAtLogin)
                     DatePicker(tr.releaseDateSetting, selection: $store.releaseDate, displayedComponents: .date)
+                    HStack {
+                        Text(tr.xHandlesLbl)
+                        Spacer()
+                        TextField("videotech", text: $store.xHandles)
+                            .textFieldStyle(.roundedBorder)
+                            .frame(width: 180)
+                    }
+                }
+                .padding(6)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+
+            GroupBox(tr.portfolio) {
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack {
+                        Text(tr.sharesLbl)
+                        Spacer()
+                        TextField("0", value: $store.positionShares, format: .number)
+                            .textFieldStyle(.roundedBorder)
+                            .multilineTextAlignment(.trailing)
+                            .frame(width: 90)
+                    }
+                    HStack {
+                        Text(tr.buyPriceLbl)
+                        Spacer()
+                        TextField("0", value: $store.positionBuyPrice, format: .number)
+                            .textFieldStyle(.roundedBorder)
+                            .multilineTextAlignment(.trailing)
+                            .frame(width: 90)
+                    }
+                    Text(tr.portfolioNote)
+                        .font(.system(size: 10)).foregroundColor(.secondary)
                 }
                 .padding(6)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -436,10 +716,30 @@ struct SettingsView: View {
                     Toggle(tr.alertOfficialLbl, isOn: store.$alertOfficial)
                     Toggle(tr.alertPressLbl, isOn: store.$alertPress)
                     Toggle(tr.alertStockLbl, isOn: store.$alertStock)
+                    Toggle(tr.alertXLbl, isOn: store.$alertX)
                     HStack {
                         Text(tr.threshold(store.stockThreshold))
                         Slider(value: store.$stockThreshold, in: 1...10, step: 0.5).frame(width: 180)
                     }
+                    Divider()
+                    HStack {
+                        Text(tr.alertHighLbl)
+                        Spacer()
+                        TextField("0", value: $store.alertHighPrice, format: .number)
+                            .textFieldStyle(.roundedBorder)
+                            .multilineTextAlignment(.trailing)
+                            .frame(width: 90)
+                    }
+                    HStack {
+                        Text(tr.alertLowLbl)
+                        Spacer()
+                        TextField("0", value: $store.alertLowPrice, format: .number)
+                            .textFieldStyle(.roundedBorder)
+                            .multilineTextAlignment(.trailing)
+                            .frame(width: 90)
+                    }
+                    Text(tr.thresholdOff)
+                        .font(.system(size: 10)).foregroundColor(.secondary)
                 }
                 .padding(6)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -513,7 +813,7 @@ struct MenuBarContent: View {
             }
             Sparkline(points: q.points, isUp: q.isUp, emptyText: tr.chartClosed).frame(height: 44)
             Divider()
-            ForEach((store.officialNews + store.pressNews).sorted { $0.date > $1.date }.prefix(4)) { item in
+            ForEach((store.officialNews + store.pressNews + store.xNews).sorted { $0.date > $1.date }.prefix(4)) { item in
                 Button {
                     SafeOpen.open(item.link)
                 } label: {

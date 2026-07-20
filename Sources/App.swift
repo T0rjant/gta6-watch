@@ -4,6 +4,7 @@
 
 import SwiftUI
 import AppKit
+import UserNotifications
 
 @main
 struct GTA6WatchApp: App {
@@ -40,6 +41,12 @@ enum StoreHolder {
 }
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
+    // Branché dès le lancement pour que le clic sur une notification ouvre le bon lien,
+    // même si la notification a été reçue quand l'app était fermée.
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        UNUserNotificationCenter.current().delegate = NotifDelegate.shared
+    }
+
     // L'app continue de tourner en barre de menus quand on ferme la fenêtre.
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { false }
 
