@@ -19,7 +19,7 @@ Built with SwiftUI. **Zero dependencies, no API keys, ~1.3 MB, sandboxed.** Fren
 - 💼 **My position** enter your shares & average buy price → live value and gain/loss, stored only on your Mac
 - 🖥️ **Menu bar ticker** TTWO price always visible next to your clock; click for a quick summary popover
 - 📢 **Official communication** Take-Two Investor Relations press releases + Rockstar Games Newswire + official YouTube channel
-- 📰 **Press & marketing coverage** gaming and finance articles **with real 2–4 line summaries**, auto-tagged (🎬 Trailer, 💹 Finance, 📣 Marketing, 📅 Release)
+- 📰 **Press & marketing coverage** gaming and finance articles **with real 2–4 line summaries**, auto-tagged (Trailer,Finance,Marketing,Release)
 - 🐦 **X insiders column** follow the accounts that break GTA VI news first (videotech, Tex2, Tom Henderson, Chris Klippel by default — fully configurable)
 - 🎬 **Official GTA VI trailers** thumbnail gallery, new trailers auto-detected from Rockstar's official channel only
 - 📖 **Expandable article cards** click any headline to unfold an animated panel with the summary, full date, and a *Read article* button — plus unread dots so you spot what's new
@@ -98,7 +98,7 @@ Sources/
 - 💼 **Ma position** saisis tes actions et ton prix d'achat moyen → valeur en direct et gains/pertes, stocké uniquement sur ton Mac
 - 🖥️ **Ticker barre de menus** le cours TTWO toujours visible à côté de l'heure ; un clic ouvre le résumé
 - 📢 **Communication officielle** communiqués Take-Two IR + Rockstar Newswire + chaîne YouTube officielle
-- 📰 **Presse & marketing** articles gaming/finance **avec de vrais résumés de 2-4 lignes**, auto-étiquetés (🎬 Trailer, 💹 Finance, 📣 Marketing, 📅 Sortie)
+- 📰 **Presse & marketing** articles gaming/finance **avec de vrais résumés de 2-4 lignes**, auto-étiquetés (Trailer,Finance,Marketing,Sortie)
 - 🐦 **Colonne Insiders X** les comptes qui sortent les infos GTA VI en premier (videotech, Tex2, Tom Henderson, Chris Klippel par défaut — entièrement configurable)
 - 🎬 **Trailers officiels GTA VI** galerie de miniatures, nouveaux trailers détectés automatiquement depuis la chaîne officielle Rockstar uniquement
 - 📖 **Cartes d'articles dépliables** clique sur un titre pour déplier un panneau animé avec le résumé, la date complète et un bouton *Lire l'article* — avec pastilles non-lu pour repérer les nouveautés
